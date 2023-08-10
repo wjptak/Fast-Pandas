@@ -31,11 +31,12 @@ class Benchmarker:
             print("WARNING: evaluated functions return different results.")
 
     def validate_functions(self):
-        functions_results = []
         df_size = 10 ** self.df_size_powers[0]
         df = eval(self.df_generator)
-        for function_to_evaluate in self.functions_to_evaluate:
-            functions_results.append(function_to_evaluate(df))
+        functions_results = [
+            function_to_evaluate(df)
+            for function_to_evaluate in self.functions_to_evaluate
+        ]
 
         valid = True
         for i in range(len(functions_results)):
@@ -46,7 +47,7 @@ class Benchmarker:
                     if not np.array_equal(functions_results[i], functions_results[j]): valid = False
                 else:
                     try:
-                        if not (functions_results[i] == functions_results[j]): valid = False
+                        if functions_results[i] != functions_results[j]: valid = False
                     except Exception as e:
                         valid = False
 
@@ -74,7 +75,7 @@ class Benchmarker:
 
             start_time = monotonic()
 
-            for loop_counter in range(loop_size):
+            for _ in range(loop_size):
                 function_to_evaluate(df)
 
             end_time = monotonic()
@@ -104,13 +105,18 @@ class Benchmarker:
 
         plt.title(self.title, fontsize=15)
         plt.ylabel("Seconds", fontsize=13)
-        plt.xticks(range(len(self.df_size_powers)), ["$10^{}$".format(x) for x in self.df_size_powers])
+        plt.xticks(
+            range(len(self.df_size_powers)),
+            [f"$10^{x}$" for x in self.df_size_powers],
+        )
+
         plt.legend(frameon=True)
 
         plt.sca(ax[1])
-        scaled_results = []
-        for result in self.benchmark_results:
-            scaled_results.append(np.divide(np.array(result), np.array(self.benchmark_results[0])))
+        scaled_results = [
+            np.divide(np.array(result), np.array(self.benchmark_results[0]))
+            for result in self.benchmark_results
+        ]
 
         max_diff = np.max(scaled_results)
         if max_diff < 3:
@@ -120,11 +126,19 @@ class Benchmarker:
             plt.plot(list(range(len(result))), result, marker="o", label=function_name.__name__)
 
         plt.title(self.title, fontsize=15)
-        plt.ylabel("w.r.t. to '{}' time".format(self.functions_to_evaluate[0].__name__), fontsize=13)
+        plt.ylabel(
+            f"w.r.t. to '{self.functions_to_evaluate[0].__name__}' time",
+            fontsize=13,
+        )
+
         plt.xlabel("Dataframe size", fontsize=13)
-        plt.xticks(range(len(self.df_size_powers)), ["$10^{}$".format(x) for x in self.df_size_powers])
+        plt.xticks(
+            range(len(self.df_size_powers)),
+            [f"$10^{x}$" for x in self.df_size_powers],
+        )
+
         plt.legend(frameon=True)
-        plt.savefig("exports/{}.png".format(self.title), bbox_inches="tight")
+        plt.savefig(f"exports/{self.title}.png", bbox_inches="tight")
         plt.show()
 
     def print_results(self):

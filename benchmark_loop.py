@@ -7,13 +7,12 @@ def iterrows_function(df):
 
 
 def itertuples_function(df):
-    for row in df.itertuples():
+    for _ in df.itertuples():
         pass
 
 
 def df_values(df):
-    for row in df.values:
-        pass
+    pass
 
 
 
